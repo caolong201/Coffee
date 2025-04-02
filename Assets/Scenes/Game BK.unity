@@ -49082,11 +49082,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: UIManager
       objectReference: {fileID: 0}
-    - target: {fileID: 5324199280527713546, guid: 832fb2f45a3ba094a98b2a1436189160,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 8681150077570144540, guid: 832fb2f45a3ba094a98b2a1436189160,
         type: 3}
       propertyPath: Hand
