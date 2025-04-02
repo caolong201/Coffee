@@ -7,6 +7,7 @@ using UnityEngine.SceneManagement;
 public class UIPopupMiniGame : MonoBehaviour
 {
     [SerializeField] private Transform root;
+    GameAnalyticsManager gameAnalyticsManager;
 
     public void Show()
     {
@@ -24,6 +25,12 @@ public class UIPopupMiniGame : MonoBehaviour
 
     public void OnbtnSkipClicked()
     {
+        int numberSkip = PlayerPrefs.GetInt("numberSkip", 0);
+        numberSkip++;
+        PlayerPrefs.SetInt("numberSkip", numberSkip);
+        GameAnalyticsManager.Instance.TrackEvent(string.Format("Mini game:ParticalProgress:SKIP:{0}", numberSkip));
+        PlayerPrefs.Save(); 
+
         Hide();
         SceneManager.LoadScene("Game");
     }

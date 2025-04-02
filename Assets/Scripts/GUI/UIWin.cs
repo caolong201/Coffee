@@ -14,11 +14,14 @@ public class UIWin : UIElement
     [SerializeField] TextMeshProUGUI coinText;
     [SerializeField] TextMeshProUGUI dayText;
     [SerializeField] TextMeshProUGUI visitorText;
-
     [SerializeField] Button nextLevelButton;
 
+
+    float currentDay;
     public void NextLevelButton()
     {
+        Debug.Log("Next Level Clicked. Current Day: " + currentDay);
+
         Hide();
         SceneManager.LoadScene("Game");
         //GameManager.Instance.ChangeState(GameStates.NextLevel);
@@ -32,9 +35,11 @@ public class UIWin : UIElement
 
     public void SetDayText(float day)
     {
+        currentDay = day;
         dayText.text = "Day " + day.ToString();
-    }
 
+        Debug.Log("Mini game:ParticalProgress:Complete: " + day);
+    }
     public void SetVisitorText(float v)
     {
         visitorText.text = v.ToString();
@@ -42,7 +47,9 @@ public class UIWin : UIElement
 
     private void Start()
     {
-        nextLevelButton.onClick.AddListener(NextLevelButton);
+        nextLevelButton.onClick.AddListener(NextLevelButton);      
     }
+
+ 
 
 }
