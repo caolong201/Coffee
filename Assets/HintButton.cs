@@ -15,7 +15,8 @@ public class HintButton : ButtonAssistant
     protected override void OnClick()
     {
         base.OnClick();
-
+        if(UITutorialMainGame.Instance.TutorialType != ETutorialType.Done) return;
+        
         GameController.Instance.DestroyeMode = false;
         UIController.Instance.BombLabel.SetActive(false);
 

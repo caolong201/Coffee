@@ -13,8 +13,6 @@ public class GameController : SingletonMonoBehaviour<GameController>
     public Transform SpawnPoint, InitPoint;
     public ParticleSystem[] MergeFx;
 
-    public GameObject Tutorial;
-
     public bool DestroyeMode { set; get; } = false;
 
     public bool Moveable { set; get; } = true;
@@ -71,11 +69,24 @@ public class GameController : SingletonMonoBehaviour<GameController>
 
         if (UserData.LevelIndex < 5)
         {
-            for (int i = 0; i < Level[UserData.LevelIndex].ItemType.Length; i++)
+            if (UserData.LevelIndex == 0)
             {
-                for (int j = 0; j < 9; j++)
+                for (int i = 0; i < Level[UserData.LevelIndex].ItemType.Length; i++)
                 {
-                    typeList.Add(Level[UserData.LevelIndex].ItemType[i]);
+                    for (int j = 0; j < 10; j++)
+                    {
+                        typeList.Add(Level[UserData.LevelIndex].ItemType[i]);
+                    }
+                }
+            }
+            else
+            {
+                for (int i = 0; i < Level[UserData.LevelIndex].ItemType.Length; i++)
+                {
+                    for (int j = 0; j < 9; j++)
+                    {
+                        typeList.Add(Level[UserData.LevelIndex].ItemType[i]);
+                    }
                 }
             }
         }
@@ -164,7 +175,6 @@ public class GameController : SingletonMonoBehaviour<GameController>
 
 
     float _timer = 0;
-    public int TutorialIndex { set; get; } = 0;
 
     public void ResetTimerTutorial()
     {
@@ -206,67 +216,6 @@ public class GameController : SingletonMonoBehaviour<GameController>
             }
 
             ItemList[i].CheckMark.transform.eulerAngles = new Vector3(0, 0, 0);
-            //ItemList[i].transform.eulerAngles = new Vector3(0, 0, ItemList[i].transform.eulerAngles.z);
-            //ItemList[i].transform.position = new Vector3(ItemList[i].transform.position.x, ItemList[i].transform.position.y, 0);
-        }
-
-        if (_timer > 2f && UserData.LevelIndex == 0 && UserData.OrderIndex == 0 &&
-            !UIController.Instance.Hand.activeSelf)
-        {
-            foreach (var item in ItemList)
-            {
-                if (!SelectedItems.Contains(item))
-                {
-                    Tutorial.transform.position = new Vector3(item.transform.position.x + 1.0f,
-                        item.transform.position.y - 1.0f, Tutorial.transform.position.z);
-
-                    Tutorial.SetActive(true);
-
-                    break;
-                }
-                else
-                {
-                    Tutorial.SetActive(false);
-                }
-            }
-        }
-        else if (_timer > 2f && UserData.LevelIndex == 1 && UserData.OrderIndex == 1 &&
-                 !UIController.Instance.Hand.activeSelf)
-        {
-            int count = 0;
-            int target = 0;
-
-            foreach (var item in ItemList)
-            {
-                if (item.Level == 1)
-                    count++;
-            }
-
-            if (count >= 3)
-            {
-                target = 1;
-            }
-
-            foreach (var item in ItemList)
-            {
-                if (!SelectedItems.Contains(item) && item.Level == target)
-                {
-                    Tutorial.transform.position = new Vector3(item.transform.position.x + 1.0f,
-                        item.transform.position.y - 1.0f, Tutorial.transform.position.z);
-
-                    Tutorial.SetActive(true);
-
-                    break;
-                }
-                else
-                {
-                    Tutorial.SetActive(false);
-                }
-            }
-        }
-        else
-        {
-            Tutorial.SetActive(false);
         }
     }
 
@@ -299,6 +248,20 @@ public class GameController : SingletonMonoBehaviour<GameController>
                 Merge();
             }
         });
+    }
+
+    public void TutrialHighlight(int type)
+    {
+        int count = 0;
+        foreach (var item in ItemList)
+        {
+            if (item.Type == type)
+            {
+                item.ForceSelect();
+                count++;
+                if (count >= 3) break;
+            }
+        }
     }
 
     public void DeselectAll()
@@ -351,6 +314,11 @@ public class GameController : SingletonMonoBehaviour<GameController>
             // Merge
             MergeAnimation(list, () =>
             {
+                if (UITutorialMainGame.Instance.TutorialType == ETutorialType.Step1)
+                {
+                    UITutorialMainGame.Instance.SetStep(ETutorialType.Step2);
+                }
+
                 for (int j = 0; j < list.Count; j++)
                 {
                     MergeFx[j].transform.position = new Vector3(list[j].gameObject.transform.position.x,
@@ -358,7 +326,7 @@ public class GameController : SingletonMonoBehaviour<GameController>
                     MergeFx[j].Play();
 
                     SelectedItems.Remove(list[j]);
-                    if (j != 1) DestroyImmediate(list[j].gameObject);
+                    if (j != 1) Destroy(list[j].gameObject);
                 }
 
                 if (resetList)
@@ -371,22 +339,27 @@ public class GameController : SingletonMonoBehaviour<GameController>
                 }
 
                 // Serve
+                bool isCorrect = false;
                 foreach (var item in Guess)
                 {
                     if (item.CheckForOrder(type))
                     {
+                        isCorrect = true;
                         item.Serve(list[1]);
-
                         break;
                     }
                 }
+
+                if (!isCorrect) Destroy(list[1].gameObject);
             });
         }
-
-        if (SelectedItems.Count >= 7)
+        else
         {
-            Moveable = false;
-            UIController.Instance.UIOver.Show();
+            if (SelectedItems.Count >= 7)
+            {
+                Moveable = false;
+                UIController.Instance.UIOver.Show();
+            }
         }
     }
 
@@ -481,7 +454,7 @@ public class GameController : SingletonMonoBehaviour<GameController>
                     .SetDelay(0.2f).SetEase(Ease.InOutElastic);
             }
 
-            DOVirtual.DelayedCall(0.7f, () => { onComplete?.Invoke(); });
+            DOVirtual.DelayedCall(.7f, () => { onComplete?.Invoke(); });
         });
     }
 }

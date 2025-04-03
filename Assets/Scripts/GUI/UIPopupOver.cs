@@ -10,6 +10,7 @@ public class UIPopupOver : MonoBehaviour
 
     public void Show()
     {
+        UserData.OrderIndex = 0;
         gameObject.SetActive(true);
         root.localScale = Vector3.zero;
         root.DOScale(new Vector3(0.35f, 0.35f, 1), 0.3f).SetEase(Ease.OutBounce);
@@ -18,7 +19,6 @@ public class UIPopupOver : MonoBehaviour
     public void OnbtnContinueClicked()
     {
         Hide();
-        Debug.Log("LevelIndex: " + UserData.LevelIndex);
         UserData.IsPlayingMiniGame = false;
       
         if (UserData.LevelIndex > 5)

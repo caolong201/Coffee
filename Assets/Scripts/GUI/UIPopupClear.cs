@@ -27,7 +27,6 @@ public class UIPopupClear : MonoBehaviour
     public void OnbtnContinueClicked()
     {
         Hide();
-        Debug.Log("LevelIndex: " + UserData.LevelIndex);
         UserData.IsPlayingMiniGame = false;
       
         if (UserData.LevelIndex > 5)

@@ -32,6 +32,7 @@ public class FoodItem : MonoBehaviour
     private Rigidbody _body;
     private Collider[] _colliders;
 
+    private bool _isForceSelected = false;
 
     private void Awake()
     {
@@ -60,6 +61,11 @@ public class FoodItem : MonoBehaviour
 
     public void HandlerClick()
     {
+        if (UITutorialMainGame.Instance.TutorialType == ETutorialType.Step1 && !_isForceSelected)
+        {
+            return;
+        }
+
         if (!GameController.Instance.Moveable)
             return;
 
@@ -90,16 +96,16 @@ public class FoodItem : MonoBehaviour
         if (!instance)
         {
             Select();
-            transform.DOLocalRotate(new Vector3(-90, 0, 0), 0.7f);
-            transform.DOScale(Vector3.one * 0.8f, 0.35f);
+            transform.DOLocalRotate(new Vector3(-90, 0, 0), 0.5f);
+            transform.DOScale(Vector3.one * 0.8f, 0.3f);
             transform.DOLocalMove(
                 new Vector3(transform.localPosition.x / 1.2f, transform.localPosition.y / 1.2f,
-                    transform.localPosition.z + 1f), 0.25f).SetEase(Ease.OutCubic).OnComplete(
+                    transform.localPosition.z + 1f), 0.2f).SetEase(Ease.OutCubic).OnComplete(
                 () =>
                 {
                     Deselect();
-                    transform.DOScale(Vector3.one * 0.2f, 0.35f);
-                    transform.DOLocalMove(Vector3.zero, 0.35f).OnComplete(() =>
+                    transform.DOScale(Vector3.one * 0.2f, 0.25f);
+                    transform.DOLocalMove(Vector3.zero, 0.25f).OnComplete(() =>
                     {
                         transform.DOPunchScale(Vector3.one * 0.1f, 0.1f);
                     });
@@ -122,9 +128,21 @@ public class FoodItem : MonoBehaviour
             _outline.Add(transform.GetChild(0).GetChild(i).gameObject.AddComponent<Outline>());
         }
     }
+    
+    public void ForceSelect()
+    {
+        _isForceSelected = true;
+        Select();
+    }
 
     public void Select()
     {
+        
+        if (UITutorialMainGame.Instance.TutorialType == ETutorialType.Step1 && !_isForceSelected)
+        {
+            return;
+        }
+        
         if (_outline.Count == 0)
             GetOutline();
 

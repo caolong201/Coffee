@@ -12,7 +12,7 @@ public class UIController : SingletonMonoBehaviour<UIController>
     public Image ProgressBar;
     public UIPopupOver  UIOver;
     public UIPopupClear UIClear;
-    public GameObject Hand, BombLabel;
+    public GameObject BombLabel;
     public GameObject[] Star;
     public Transform StarTarge;
     public UIPopupMiniGame popupMiniGame;
@@ -41,10 +41,10 @@ public class UIController : SingletonMonoBehaviour<UIController>
 
                     UpdateOrder();
 
-                    if (UserData.OrderIndex >= 7)
+
+                    if (UserData.OrderIndex >= 7 || (UserData.LevelIndex == 0 && UserData.OrderIndex >= 3))
                     {
                         UserData.OrderIndex = 0;
-
                         UserData.LevelIndex++;
                     }
                 });
@@ -57,14 +57,22 @@ public class UIController : SingletonMonoBehaviour<UIController>
     // Update is called once per frame
     public void UpdateOrder()
     {
-        //if (UserData.LevelIndex < 3)
+        ClearLbl.text = $"Level {UserData.LevelIndex + 1}";
+        StageLabel.text = $"LEVEL {UserData.LevelIndex + 1}";
+        if (UserData.LevelIndex == 0)
         {
-            ClearLbl.text = $"Level {UserData.LevelIndex + 1}";
-            StageLabel.text = $"LEVEL {UserData.LevelIndex + 1}";
+          
+            OrderLabel.text = $"{UserData.OrderIndex}/3";
+            DOTween.To(() => ProgressBar.fillAmount, x => ProgressBar.fillAmount = x, UserData.OrderIndex / 3f, 0.5f);
+
+            if (UserData.OrderIndex >= 3)
+            {
+                GameClear();
+            }
+        }
+        else
+        {
             OrderLabel.text = $"{UserData.OrderIndex}/7";
-
-            //ProgressBar.fillAmount = UserData.OrderIndex / 7f;
-
             DOTween.To(() => ProgressBar.fillAmount, x => ProgressBar.fillAmount = x, UserData.OrderIndex / 7f, 0.5f);
 
             if (UserData.OrderIndex >= 7)
@@ -72,19 +80,7 @@ public class UIController : SingletonMonoBehaviour<UIController>
                 GameClear();
             }
         }
-        //else
-        //{
-        //    ClearLbl.text = $"Level {UserData.LevelIndex + 1}";
-        //    StageLabel.text = $"LEVEL {UserData.LevelIndex + 1}";
-        //    OrderLabel.text = $"{UserData.OrderIndex}/7";
-
-        //    ProgressBar.fillAmount = UserData.OrderIndex / 7f;
-
-        //    if (UserData.OrderIndex >= 7)
-        //    {
-        //        GameClear();
-        //    }
-        //}
+        
     }
 
     public void GameClear()

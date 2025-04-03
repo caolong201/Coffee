@@ -15,6 +15,8 @@ public class DestroyButton : ButtonAssistant
     protected override void OnClick()
     {
         base.OnClick();
+        
+        if(UITutorialMainGame.Instance.TutorialType != ETutorialType.Done) return;
 
         foreach (var item in GameController.Instance.ItemList)
         {

@@ -128,7 +128,7 @@ public class GuessController : MonoBehaviour
             if (_isMainGame)
             {
                 _particleEmotion = EffectManager.Instance.PlayEffect<ParticleSystem>(effType,
-                    new Vector3(ModelHost.position.x, ModelHost.position.y, ModelHost.position.z + 4),
+                    new Vector3(ModelHost.position.x, ModelHost.position.y, ModelHost.position.z + 5),
                     Quaternion.Euler(Vector3.zero));
 
                 _particleEmotion.gameObject.layer = LayerMask.NameToLayer("Top");
@@ -166,9 +166,7 @@ public class GuessController : MonoBehaviour
             do
             {
                 dup = false;
-
                 type = GameController.Instance.ItemList[Random.Range(0, GameController.Instance.ItemList.Count)].Type;
-
                 count = 0;
 
                 foreach (var item in GameController.Instance.OrderList)
@@ -216,6 +214,14 @@ public class GuessController : MonoBehaviour
                 _order.Add(order);
 
                 _money += (0 + 1) * 5 + Random.Range(0, 10);
+
+                if (UserData.LevelIndex == 0 && ETutorialType.HighlightItem == UITutorialMainGame.Instance.TutorialType)
+                {
+                    Debug.LogError("show highlight");
+                    //tutorial
+                    GameController.Instance.TutrialHighlight(type);
+                    UITutorialMainGame.Instance.SetStep(ETutorialType.Step1);
+                }
             }
         }
 
@@ -253,17 +259,6 @@ public class GuessController : MonoBehaviour
             }
 
             _obj.Clear();
-
-
-            if (UserData.LevelIndex == 0 && UserData.OrderIndex == 0)
-            {
-                UIController.Instance.Hand.SetActive(false);
-            }
-
-            if (UserData.LevelIndex == 1 && UserData.OrderIndex == 1)
-            {
-                UIController.Instance.Hand.SetActive(false);
-            }
 
             UserData.TotalMoneyInGame += _money;
             // CoinLbl.transform.parent.gameObject.SetActive(false);
@@ -308,7 +303,7 @@ public class GuessController : MonoBehaviour
                 GameController.Instance.OrderList.Remove(item);
             }
 
-            DestroyImmediate(foodItem.gameObject);
+            Destroy(foodItem.gameObject);
         });
     }
 
