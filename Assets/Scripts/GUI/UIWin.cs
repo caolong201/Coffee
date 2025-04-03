@@ -12,13 +12,13 @@ public class UIWin : UIElement
 
     public override bool UseBehindPanel => true;
 
-    [SerializeField] Text coinText;
+    //[SerializeField] Text coinText;
     [SerializeField] TextMeshProUGUI dayText;
     [SerializeField] TextMeshProUGUI visitorText;
     [SerializeField] Text curCoinText;
 
     [SerializeField] Button nextLevelButton;
-    [SerializeField] Button homeButon;
+    //[SerializeField] Button homeButon;
     [SerializeField] Button adsButon;
 
     [SerializeField] Transform titleTF;
@@ -40,7 +40,7 @@ public class UIWin : UIElement
     private void Start()
     {
         nextLevelButton.onClick.AddListener(NextLevelButton);
-        homeButon.onClick.AddListener(HomeButton);
+        //homeButon.onClick.AddListener(HomeButton);
         adsButon.onClick.AddListener(() =>
         {
             isSpinning = false;
@@ -154,7 +154,7 @@ public class UIWin : UIElement
         if (DayManager.Instance.UseDayInUserData)
             GameManager.Instance.UserData.day = DayManager.Instance.DayIndex + 1;
         GameManager.Instance.AddCoin(GetReward());
-        homeButon.gameObject.SetActive(DayManager.Instance.DayIndex >= DayManager.Instance.dayConfig.licenceDay);
+        //homeButon.gameObject.SetActive(DayManager.Instance.DayIndex >= DayManager.Instance.dayConfig.licenceDay);
         Game.Save();
         UpdateUserCoin();
 
@@ -191,7 +191,7 @@ public class UIWin : UIElement
 
     private void SetCoinText(float coin)
     {
-        coinText.text = coin.ToString();
+        //coinText.text = coin.ToString();
     }
 
     private void SetDayText(float day)
