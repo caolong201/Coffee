@@ -10,16 +10,18 @@ public class Game : MonoBehaviour
     public static bool IsLaunched { get; private set; }
     private void OnApplicationQuit()
     {
-        if (DayManager.Instance.UseDayInUserData)
-        {
-            Data.SaveAll();
-        }
-       
+        //Save();
     }
     private void OnApplicationPause(bool pause)
     {
         //if (pause) Data.SaveAll();
     }
+
+    public static void Save()
+    {
+        if (DayManager.Instance.UseDayInUserData) Data.SaveAll();
+    }
+
     public static void Launch()
     {
         if (IsLaunched) return;

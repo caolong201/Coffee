@@ -8,11 +8,19 @@ public class FoodIcon : MonoBehaviour
     [SerializeField] Image foodIcon;
     [SerializeField] TextMeshProUGUI priceText;
 
-    bool stopCoroutine = false;
+    private bool stopCoroutine = false;
+    private Food curFood;
+
     public void SetUp(Food food)
     {
-        priceText.text = food.Price.ToString();
+        curFood = food;
         foodIcon.sprite = food.Icon;
+        Refresh();
+    }
+
+    public void Refresh()
+    {
+        priceText.text = GameManager.Instance.UserData.GetFoodPrice(curFood).ToString();
     }
 
     public void Tutorial()

@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class DayManager : Singleton<DayManager>, IOnStart
 {
-    [SerializeField] DayConfig dayConfig;
+    public DayConfig dayConfig;
     [SerializeField] FoodConfig foodConfig;
     [SerializeField] FoodObjectPool foodObjectPool;
     public FoodObjectPool FoodObjectPool => foodObjectPool;
@@ -29,7 +29,7 @@ public class DayManager : Singleton<DayManager>, IOnStart
 
     public bool WaveFinished { get; set; } = true;
     bool isFinishAllWaves = false;
-    public bool IsLastWave { get; set; } = false;
+    public bool IsLastWave { get; set; } = false;   
     public bool NeedTutorial = false;
     float waveCoin = 0;
     public float DayCoin { get; private set; } = 0;
@@ -38,7 +38,6 @@ public class DayManager : Singleton<DayManager>, IOnStart
     public int ServedPassenger { get; private set; } = 0;
 
     Coroutine spawnFoodCoroutine;
-
     public void OnStart()
     {
         FoodDict = foodConfig.CreateFoodDictionary();
@@ -51,45 +50,58 @@ public class DayManager : Singleton<DayManager>, IOnStart
         }
     }
 
-    public void LoadDay(bool isRetry = false)
+    public void CleanPassengers()
+    {
+       // passengerManager.NextPassengerController.Refresh();
+    }
+
+    public bool HasShop() => DayIndex >= DayManager.Instance.dayConfig.licenceDay;
+
+    public void Resume()
+    {
+        VFXAnimationManager.Instance.StopAngryEmoji();
+        GameUI.Instance.Get<UIInGame>().Show();
+        GameUI.Instance.Get<UIInGame>().Reset();
+    }
+
+    public void Clear(bool isRetry)
     {
         Reset(isRetry);
         // passengerManager.CurrentPassengerController.Reset();
         // passengerManager.NextPassengerController.Reset(isRetry);
-        
-        passengerManager.GetRandomPassengerObject();
+    }
+
+    public void LoadDay(bool isRetry = false)
+    {
+        GameManager.Instance.SetupIngame();
+        var userData = GameManager.Instance.UserData;
+        if (UseDayInUserData)
+        {
+            while (userData.day >= MaxDay)
+            {
+                GenerateRandomDay();
+            }
+        }
+        Clear(isRetry);
+
         GameUI.Instance.Get<UIInGame>().Show();
 
         if (NeedTutorial)
         {
-            if (dayIndex != 0)
+            if(dayIndex != 0)
             {
                 NeedTutorial = false;
+            }
+            else if(dayIndex == dayConfig.licenceDay)
+            {
+
             }
             else
             {
                 GameManager.Instance.ChangeState(GameStates.Tutorial);
-            }
+            }  
         }
-
-        Debug.Log(dayIndex);
-        foreach (var pair in DayDict)
-        {
-            Debug.Log(pair.Key + " # " + pair.Value);
-        }
-
-        if (dayIndex >= DayDict.Count)
-        {
-            int tempIndex = DayDict.Count;
-            while (tempIndex <= dayIndex)
-            {
-                GenerateRandomDay(tempIndex);
-                tempIndex++;
-            }
-        }
-
         Day day = DayDict[dayIndex];
-
         foreach (Passenger passenger in day.PassengerList)
         {
             foreach (FoodOrder foodOrder in passenger.FoodOrderList)
@@ -98,34 +110,33 @@ public class DayManager : Singleton<DayManager>, IOnStart
                 int quantity = foodOrder.Quantity;
 
                 Food food = FoodDict[id];
-                TotalDayCoin += food.Price * quantity;
+                TotalDayCoin += userData.GetFoodPrice(food) * quantity;
             }
-
             TotalDayPassenger++;
         }
 
         GameUI.Instance.Get<UIInGame>().SetProgress(DayCoin, TotalDayCoin);
         GameUI.Instance.Get<UIInGame>().SetDayText(dayIndex);
+        GameUI.Instance.Get<UIInGame>().UpdateCoinLb();
         spawnFoodCoroutine = StartCoroutine(SpawnFoodToTable(day));
         passengerManager.GetRandomPassengerObject();
+        
     }
 
     IEnumerator SpawnFoodToTable(Day day)
     {
-        for (int i = 0; i < day.PassengerList.Count; i++)
+        for(int i = 0; i < day.PassengerList.Count; i++)
         {
             Passenger passenger = day.PassengerList[i];
-
+           
             yield return new WaitUntil(() => WaveFinished);
-             //passengerManager.CurrentPassengerController.nextPassenger = true;
             passengerManager.GetRandomPassengerObject();
             if (i == day.PassengerList.Count - 1)
             {
                 IsLastWave = true;
             }
-
             yield return new WaitForSeconds(.25f);
-
+            
             foreach (FoodOrder foodOrder in passenger.FoodOrderList)
             {
                 int id = foodOrder.FoodId;
@@ -133,8 +144,8 @@ public class DayManager : Singleton<DayManager>, IOnStart
 
                 Food food = FoodDict[id];
                 int index = quantity - 1;
-
-
+             
+              
                 //Instantiate(food.foodStacks[index], spawnFoodPoint);
 
                 FoodSpot foodSpot = GetFoodSpot();
@@ -151,10 +162,9 @@ public class DayManager : Singleton<DayManager>, IOnStart
                         GameUI.Instance.Get<UIUnlockFood>().AddToShowList(food);
                     }
 
-                    waveCoin += food.Price * quantity;
-
-                    FoodController foodController = foodObjectPool.GetFood(id, quantity,
-                        food.foodStacks[index].gameObject, spawnFoodPoint);
+                    waveCoin += GameManager.Instance.UserData.GetFoodPrice(food) * quantity;
+                   
+                    FoodController foodController = foodObjectPool.GetFood(id, quantity, food.foodStacks[index].gameObject, spawnFoodPoint);
                     foodController.SetFoodSpot(foodSpot, despawnFoodPoint, id, quantity);
                     currentFoodControllers.Add(foodController);
                     foodSpot.IsHadFood = true;
@@ -165,11 +175,12 @@ public class DayManager : Singleton<DayManager>, IOnStart
         }
 
         isFinishAllWaves = true;
+
     }
 
     FoodSpot GetFoodSpot()
     {
-        foreach (FoodSpot foodSpot in foodSpots)
+        foreach(FoodSpot foodSpot in foodSpots)
         {
             if (!foodSpot.IsHadFood)
             {
@@ -180,9 +191,14 @@ public class DayManager : Singleton<DayManager>, IOnStart
         return null;
     }
 
+    public void Cheat()
+    {
+        CheckAnswer(waveCoin);
+    }
+
     public void CheckAnswer(float answer)
     {
-        if (answer != waveCoin)
+        if(answer != waveCoin)
         {
             if (NeedTutorial)
             {
@@ -192,11 +208,10 @@ public class DayManager : Singleton<DayManager>, IOnStart
             }
             else
             {
-                //VFXAnimationManager.Instance.PlayAngryEmoji();
-                EffectManager.Instance.PlayEffect<GameObject>(EEffectType.Failed, new Vector3(0,2.2f,-4), Quaternion.Euler(new Vector3(0, 180, 0)));
+                VFXAnimationManager.Instance.PlayAngryEmoji();
                 StartCoroutine(EndGameResult(false));
                 return;
-            }
+            } 
         }
 
         if (NeedTutorial)
@@ -213,7 +228,7 @@ public class DayManager : Singleton<DayManager>, IOnStart
         {
             controller.ChangeState(FoodStage.OnBilled);
         }
-
+        
 
         DayCoin += waveCoin;
         ServedPassenger++;
@@ -225,8 +240,7 @@ public class DayManager : Singleton<DayManager>, IOnStart
         DOVirtual.DelayedCall(2f,()=>{
             WaveFinished = true;
         });
-;        //passengerManager.CurrentPassengerController.ChangeState(PassengerStage.OnWalkingOut);
-        //WaveFinished = true;
+       
         currentFoodControllers.Clear();
 
 
@@ -239,13 +253,22 @@ public class DayManager : Singleton<DayManager>, IOnStart
 
     void Reset(bool isRetry)
     {
+        
         if (isRetry)
         {
             VFXAnimationManager.Instance.StopAngryEmoji();
             foodObjectPool.RemoveAllFood();
+            //cheat fix remove all food bug
+            foreach(var foodspot in foodSpots)
+            {
+                foreach(Transform foodTF in foodspot.transform)
+                {
+                    foodTF.gameObject.SetActive(false);
+                }
+            }
         }
 
-        if (spawnFoodCoroutine != null) StopCoroutine(spawnFoodCoroutine);
+        if(spawnFoodCoroutine != null) StopCoroutine(spawnFoodCoroutine);
         waveCoin = 0;
         TotalDayCoin = 0;
         DayCoin = 0;
@@ -257,7 +280,7 @@ public class DayManager : Singleton<DayManager>, IOnStart
         TotalDayPassenger = 0;
         dayIndex = GameManager.Instance.UserData.day;
 
-        foreach (FoodSpot foodSpot in foodSpots)
+        foreach(FoodSpot foodSpot in foodSpots)
         {
             foodSpot.IsHadFood = false;
         }
@@ -265,6 +288,7 @@ public class DayManager : Singleton<DayManager>, IOnStart
 
     IEnumerator EndGameResult(bool isWon)
     {
+
         if (isWon)
         {
             yield return new WaitForSeconds(0.75f);
@@ -275,49 +299,61 @@ public class DayManager : Singleton<DayManager>, IOnStart
             yield return new WaitForSeconds(0.25f);
             GameManager.Instance.ChangeState(GameStates.Lose);
         }
+       
     }
 
-    public void GenerateRandomDay(int dayIndex)
+    public void RemoveLast()
     {
-        int maxPassengersPerDay = dayIndex + 1;
+        var id = dayConfig.Days.Count - 1;
+        dayConfig.Days.RemoveAt(id);
+        DayDict.Remove(id);
+        MaxDay--;
+    }
+
+    public void GenerateRandomDay()
+    {
+        var curSales = 0;
         Day newDay = new Day();
         newDay.DayID = dayConfig.Days.Count;
+        var goalSales = GameHelper.GetGoalSale(newDay.DayID);
 
-        int passengerCount = Random.Range(1, maxPassengersPerDay + 1);
-        for (int j = 0; j < passengerCount; j++)
+        while (curSales < goalSales)
         {
             Passenger newPassenger = new Passenger();
 
-            int orderCount = Random.Range(1, 5);
+            int orderCount = Random.Range(2, 5);
             for (int k = 0; k < orderCount; k++)
             {
                 FoodOrder newOrder = new FoodOrder();
 
-                int randomFoodId = GetRandomFoodId(FoodDict);
+                int randomFoodId = GetRandomFoodId(curSales);
 
                 if (FoodDict.TryGetValue(randomFoodId, out Food selectedFood))
                 {
                     int maxQuantity = selectedFood.foodStacks.Count;
-                    newOrder.Quantity = Random.Range(1, maxQuantity + 1);
+                    newOrder.Quantity = new System.Random(Time.frameCount - randomFoodId - curSales).Next(1, maxQuantity + 1);
                     newOrder.FoodId = randomFoodId;
+                    curSales += selectedFood.GetPrice(GameManager.Instance.UserData.GetFoodLevel(randomFoodId)) * newOrder.Quantity;
                 }
 
                 newPassenger.FoodOrderList.Add(newOrder);
+                if (curSales >= goalSales) break;
             }
 
             newDay.PassengerList.Add(newPassenger);
         }
-
         dayConfig.Days.Add(newDay);
 
         DayDict.Add(newDay.DayID, newDay);
         MaxDay++;
     }
 
-    private int GetRandomFoodId(Dictionary<int, Food> foodDict)
+    private int GetRandomFoodId(int seed)
     {
-        List<int> foodIds = new List<int>(foodDict.Keys);
-        int randomIndex = Random.Range(0, foodIds.Count);
+        var foodIds = GameManager.Instance.UserData.unlockedFoodIdList;
+        int randomIndex = new System.Random(seed + Time.frameCount).Next(foodIds.Count);
         return foodIds[randomIndex];
     }
+
+    public void ReduceDay() => dayIndex--;
 }

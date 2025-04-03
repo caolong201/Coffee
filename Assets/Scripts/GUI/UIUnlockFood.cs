@@ -17,10 +17,11 @@ public class UIUnlockFood : UIElement
 
     [SerializeField] List<Food> needToShowFoodList = new List<Food>();
     Food currentShowFood;
+
     public void SetUp(Food food)
     {
         Sprite sprite = food.Icon;
-        float price = food.Price;
+        float price = GameManager.Instance.UserData.GetFoodPrice(food);
 
         icon.sprite = sprite;
         coinText.text = price.ToString();

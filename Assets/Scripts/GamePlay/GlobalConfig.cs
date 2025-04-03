@@ -4,7 +4,7 @@ using UnityEngine;
 using Data;
 public class GlobalConfig : Singleton<GlobalConfig>
 {
-    public UserDataV1 userData
+    public UserDataMiniGame userData
     {
         get; private set;
     }
@@ -14,6 +14,6 @@ public class GlobalConfig : Singleton<GlobalConfig>
         base.Awake();
         Game.Launch();
         DontDestroyOnLoad(gameObject);
-        userData = Game.Data.Load<UserDataV1>();
+        userData = Game.Data.Load<UserDataMiniGame>();
     }
 }

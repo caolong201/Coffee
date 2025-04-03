@@ -11,7 +11,7 @@ public class NextPassengerController : MonoBehaviour
     [SerializeField] Animator m_animator;
     [SerializeField] GameObject nextPassengerObject;
     [SerializeField] PassengerObjectKey nextPassengerKey;
-    [SerializeField] PassengerStage passengerStage = PassengerStage.None;
+    [SerializeField] PassengerStage passengerStage;
 
     [SerializeField] Transform spawnPoint;
     [SerializeField] Transform waitForTurnPoint;
@@ -27,11 +27,6 @@ public class NextPassengerController : MonoBehaviour
 
         m_animator = nextPassengerObject.GetComponent<Animator>();
         ChangeState(PassengerStage.OnWalkingIn);
-    }
-    
-    public void SetPassengerPrefab(Sprite sprSkin, int gender, int id)
-    {
-       
     }
 
     public void ChangeState(PassengerStage newState)
@@ -157,9 +152,23 @@ public class NextPassengerController : MonoBehaviour
             if(!isRetry) firstLoad = true;
             currentPassengerController.SetFirstLoad(true);
         }
-       
+
         //ResetPassenger();
     }
+
+    public void Refresh()
+    {
+        gameObject.SetActive(false);
+        gameObject.SetActive(true);
+    }
+
+    public void Clear()
+    {
+        coroutine = null;
+        firstLoad = false;
+        Reset(true);
+    }
+
     void RandomIdleAnim()
     {
         m_animator.SetTrigger("Idle");

@@ -9,27 +9,56 @@ using Data;
 
 public class GameManager : Singleton<GameManager>
 {
-    public UserDataV1 UserData { get; private set; }
+    public Transform furnitureRoot;
+    [SerializeField] private GameObject ingameObj;
 
+    public UserDataMiniGame UserData
+    {
+        get; private set;
+    }
     protected override void Awake()
     {
         base.Awake();
         Game.Launch();
-        UserData = Game.Data.Load<UserDataV1>();
+        UserData = Game.Data.Load<UserDataMiniGame>();
+        GameAnalyticsSDK.GameAnalytics.Initialize();
+        AdUtil.Init();
+        TrackingUtil.Init();
     }
-
+   
 
     private void Start()
     {
         //GameUI.Instance.Get<UIStart>().Show();
         DayManager.Instance.OnStart();
         ChangeState(GameStates.Start);
+
+        /*var count = furnitureRoot.childCount;
+        for(var i = 0; i < count; i++)
+        {
+            furnitureRoot.GetChild(i).SetActive(UserData.unlockedFurnitures.Contains(i));
+        }*/
+    }
+
+#if UNITY_EDITOR
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            DayManager.Instance.Cheat();
+        }
     }
 
 
-    [SerializeField] private GameStates _state = GameStates.Retry;
-    public GameStates State => _state;
+    [ContextMenu("Delete Data")]
+    private void DeleteData()
+    {
+        Debug.LogError("delete data");
+        PlayerPrefs.DeleteAll();
+    }
+#endif
 
+    [SerializeField] private GameStates _state = GameStates.Retry;
     public void ChangeState(GameStates newState)
     {
         if (newState == _state) return;
@@ -40,39 +69,40 @@ public class GameManager : Singleton<GameManager>
 
     private void EnterNewState()
     {
+
         switch (_state)
         {
             case GameStates.Tutorial:
                 GameUI.Instance.Get<UITutorial>().Show();
                 break;
             case GameStates.Home:
+                if (UserData.day < DayManager.Instance.dayConfig.licenceDay)
+                {
+                    ChangeState(GameStates.Start);
+                }
+                else
+                {
+                    GameUI.Instance.Get<UIHome>().Show();
+                }
+
                 break;
             case GameStates.Start:
+                GameAnalyticsSDK.GameAnalytics.NewDesignEvent($"Level:{DayManager.Instance.DayIndex}:Start");
                 DayManager.Instance.LoadDay();
                 break;
             case GameStates.Play:
-
+              
                 break;
             case GameStates.Retry:
                 DayManager.Instance.LoadDay(true);
                 break;
+            case GameStates.Resume:
+                DayManager.Instance.Resume();
+                break;
             case GameStates.Win:
-                if (DayManager.Instance.UseDayInUserData)
-                {
-                    UserData.day = DayManager.Instance.DayIndex + 1;
-                    if (UserData.day >= DayManager.Instance.MaxDay)
-                    {
-                        Debug.LogError("GenerateRandomDay");
-                        DayManager.Instance.GenerateRandomDay(DayManager.Instance.DayIndex);
-                    }
-                }
-
-                // UIController.Instance.GameClear();
-                //GameUI.Instance.Get<UIInGame>().Hide();
+                GameAnalyticsSDK.GameAnalytics.NewDesignEvent($"Level:{DayManager.Instance.DayIndex}:Complete");
+                GameUI.Instance.Get<UIInGame>().Hide();
                 GameUI.Instance.Get<UIWin>().Show();
-                GameUI.Instance.Get<UIWin>().SetCoinText(DayManager.Instance.TotalDayCoin);
-                GameUI.Instance.Get<UIWin>().SetDayText(DayManager.Instance.DayIndex + 1);
-                GameUI.Instance.Get<UIWin>().SetVisitorText(DayManager.Instance.TotalDayPassenger);
                 break;
             case GameStates.Lose:
                 GameUI.Instance.Get<UIInGame>().Hide();
@@ -80,6 +110,7 @@ public class GameManager : Singleton<GameManager>
                 break;
             case GameStates.NextLevel:
                 DayManager.Instance.LoadDay();
+                //ChangeState(GameStates.Home);
                 break;
             default:
                 break;
@@ -97,7 +128,7 @@ public class GameManager : Singleton<GameManager>
             case GameStates.Start:
                 break;
             case GameStates.Play:
-
+   
                 break;
             case GameStates.Retry:
                 break;
@@ -106,25 +137,36 @@ public class GameManager : Singleton<GameManager>
             case GameStates.Lose:
                 break;
             case GameStates.NextLevel:
-
+          
                 break;
             default:
                 break;
         }
     }
 
+    public void SetupIngame()
+    {
+        ingameObj.SetActive(true);
+    }
+
+    public void SetupOutgame()
+    {
+        ingameObj.SetActive(false);
+    }
+
     public bool CheckUnlockedFood(int id)
     {
         if (UserData.unlockedFoodIdList.Contains(id))
         {
+           
             return true;
         }
-
         if (DayManager.Instance.UseDayInUserData)
         {
             UserData.unlockedFoodIdList.Add(id);
+            UserData.foodLevels.Add(0);
         }
-
+    
         return false;
     }
 
@@ -136,12 +178,5 @@ public class GameManager : Singleton<GameManager>
 
 public enum GameStates
 {
-    Play,
-    Win,
-    Lose,
-    Home,
-    Tutorial,
-    Start,
-    Retry,
-    NextLevel
+    None = -1, Play, Win, Lose, Home, Tutorial, Start, Retry, NextLevel, Resume
 }

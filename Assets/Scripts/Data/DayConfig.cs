@@ -5,6 +5,7 @@ using UnityEngine;
 [CreateAssetMenu]
 public class DayConfig : ScriptableObject
 {
+    public int licenceDay = 3;
     public List<Day> Days = new List<Day>();
 
     public Dictionary<int, Day> CreateDayDictionary()

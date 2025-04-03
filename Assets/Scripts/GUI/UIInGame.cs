@@ -3,9 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
+using DG.Tweening;
 
 public class UIInGame : UIElement
 {
@@ -45,34 +45,53 @@ public class UIInGame : UIElement
 
     [SerializeField] TextMeshProUGUI dayText;
     [SerializeField] TextMeshProUGUI passengerText;
+    [SerializeField] TextMeshProUGUI saleText;
+    [SerializeField] Slider progressSlider;
+    [SerializeField] Button cheatBtn;
+    [SerializeField] RectTransform bottomRT;
+
     public override void Show()
     {
         base.Show();
-        
-        availableFoodIcons.Clear();
+
+        CheckAvailableFoodIcons();
+
+        foreach (NumberButton numberButton in numberButtons)
+        {
+            numberButton.UIInGame = this;
+        }
+        bottomRT.anchoredPosition = new Vector2(0, GetPosInUI(GameObject.Find("Shop/Cube").transform.position).y);
+    }
+
+    public RectTransform GetNumRT(int idx) => numberButtons[idx].transform as RectTransform;
+
+    public Button GetEqualBtn() => equalButton;
+
+    public void CheckAvailableFoodIcons()
+    {
+        var data = GameManager.Instance.UserData;
+        var availableIds = data.unlockedFoodIdList;
         List<Food> foods = DayManager.Instance.FoodDict.Values.ToList();
         int day = DayManager.Instance.DayIndex;
         foreach (Food food in foods)
         {
-            if (food.DayUnlock <= day && !availableFoods.Contains(food))
+            if ((food.DayUnlock <= day || availableIds.Contains(food.Id)) && !availableFoods.Contains(food))
             {
                 availableFoods.Add(food);
+                data.UnlockFood(food.Id);
                 FoodIcon foodIcon = Instantiate(foodIconPref, foodIconParent);
                 foodIcon.SetUp(food);
                 availableFoodIcons.Add(foodIcon);
             }
         }
-
-        foreach(NumberButton numberButton in numberButtons)
-        {
-            numberButton.UIInGame = this;
-        }
+        foreach (var icon in availableFoodIcons) icon.Refresh();
     }
 
     public void UndoButton()
     {
         Reset();
     }
+
 
     public void DecimalButton()
     {     
@@ -309,6 +328,8 @@ public class UIInGame : UIElement
         multiplyButton.onClick.AddListener(MutiplyButton);
         divideButton.onClick.AddListener(DivideButton);
         undoButton.onClick.AddListener(UndoButton);
+
+        cheatBtn.onClick.AddListener(() => DayManager.Instance.Cheat());
     }
 
     Coroutine sliderCoroutine;
@@ -316,13 +337,22 @@ public class UIInGame : UIElement
     {
         //progressText.text = a.ToString() + "/" + b.ToString();
         Reset();
-        progressText.text = GameManager.Instance.UserData.coin.ToString();
-        passengerText.text = (DayManager.Instance.TotalDayPassenger - DayManager.Instance.ServedPassenger).ToString();
-
+        UpdateCoinLb();
+        //passengerText.text = (DayManager.Instance.TotalDayPassenger - DayManager.Instance.ServedPassenger).ToString();
+        var totalCoin = DayManager.Instance.HasShop() ? GameHelper.GetGoalSale(GameManager.Instance.UserData.day) : DayManager.Instance.TotalDayCoin;
+        saleText.text = $"{DayManager.Instance.DayCoin}/{totalCoin}";
+        progressSlider.DOKill();
+        progressSlider.DOValue((float)DayManager.Instance.DayCoin / totalCoin, 0.2f);
 
         if (sliderCoroutine != null) StopCoroutine(sliderCoroutine);
         sliderCoroutine = StartCoroutine(AnimateFillAmount(a / b));
     }
+
+    public void UpdateCoinLb()
+    {
+        progressText.text = GameManager.Instance.UserData.coin.ToString();
+    }
+
     private IEnumerator AnimateFillAmount(float targetFillAmount)
     {
         if(slider == null) yield break;
@@ -362,7 +392,7 @@ public class UIInGame : UIElement
         dayText.text = "Day " + (day + 1).ToString();
     }
 
-    private void Reset()
+    public void Reset()
     {
         number_1 = "";
         number_2 = "";
@@ -385,6 +415,20 @@ public class UIInGame : UIElement
         {
             foodIcon.StopTutorial();
         }
+    }
+
+    private Vector2 GetPosInUI(Vector3 worldPos)
+    {
+        var viewportPosition = GameObject.Find("Shop/Main Camera").GetComponent<Camera>().WorldToViewportPoint(worldPos);
+        return ViewportPosToCanvasPos(GetComponentInParent<Canvas>().GetComponent<RectTransform>(), viewportPosition);
+    }
+
+    private Vector2 ViewportPosToCanvasPos(RectTransform canvasRT, Vector3 ViewportPosition)
+    {
+        return new Vector2(
+            (ViewportPosition.x * canvasRT.sizeDelta.x) - (canvasRT.sizeDelta.x * 0.5f),
+            (ViewportPosition.y * canvasRT.sizeDelta.y) - (canvasRT.sizeDelta.y * 0.5f)
+        );
     }
 }
 

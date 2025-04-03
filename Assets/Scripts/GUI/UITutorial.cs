@@ -23,6 +23,8 @@ public class UITutorial : UIElement
     [SerializeField] GameObject pointerStage2;
     [SerializeField] GameObject pointerStage3;
 
+    public static bool IsActive { get; private set; }
+
     public override void Show()
     {
         base.Show();
@@ -33,7 +35,15 @@ public class UITutorial : UIElement
         stage3.SetActive(false);
         stageCompleted.SetActive(false);
         stageFailed.SetActive(false);
+        IsActive = true;
     }
+
+    public override void Hide()
+    {
+        base.Hide();
+        IsActive = false;
+    }
+
     public void Stage1Button()
     {
         stage1.SetActive(false);
@@ -48,8 +58,29 @@ public class UITutorial : UIElement
     {
         stage2.SetActive(false);
         stage3.SetActive(true);
-        VFXAnimationManager.Instance.PulsingAnimation(pointerStage3, new Vector3(1.2f, 1.2f, 1.2f), Vector3.one, 0.5f);
+        pointerStage3.gameObject.SetActive(false);
+        //VFXAnimationManager.Instance.PulsingAnimation(pointerStage3, new Vector3(1.2f, 1.2f, 1.2f), Vector3.one, 0.5f);
         GameUI.Instance.Get<UIInGame>().StopTutorial();
+
+        var mask = GameUI.Instance.Get<UITutorialMask>();
+        var ingame = GameUI.Instance.Get<UIInGame>();
+        mask.Show();
+        var rt = ingame.GetNumRT(2);
+        mask.UpdateFocus(rt, () =>
+        {
+            rt.GetComponent<Button>().onClick.Invoke();
+            rt = ingame.GetNumRT(5);
+            mask.UpdateFocus(rt, () =>
+            {
+                rt.GetComponent<Button>().onClick.Invoke();
+                var btn = ingame.GetEqualBtn();
+                mask.UpdateFocus(btn.image.rectTransform, () =>
+                {
+                    btn.onClick.Invoke();
+                    mask.Hide();
+                });
+            });
+        });
     }
 
     public void StageCompletedButton()

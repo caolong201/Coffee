@@ -25,7 +25,20 @@ public class Food
     public int Id;
     public string Name;
     public Sprite Icon;
-    public int Price;
+    [SerializeField] private int Price;
+    public int levelPrice;
     public int DayUnlock;
     public List<FoodController> foodStacks;
+    [SerializeField] private int initialCost;
+    [SerializeField] private int levelCost;
+
+    public int GetLicenseCost(int level)
+    {
+        return initialCost + (level + 1) * levelCost;
+    }
+
+    public int GetPrice(int level)
+    {
+        return Price + level * levelPrice;
+    }
 }

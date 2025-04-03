@@ -58,4 +58,17 @@ public static class GameHelper
         }
         return text;
     }
+
+    public static int[] GoalSales = new int[] { 55, 115, 335, 350, 360, 400, 370, 420, 450, 500, 470, 530, 550, 620, 540, 580, 650, 700, 680, 710 };
+    public static int GetGoalSale(int dayIdx)
+    {
+        var length = GoalSales.Length;
+        if (dayIdx < length) return GoalSales[dayIdx];
+        return GoalSales[length - 1] + (dayIdx + 1 - length) * 50;
+    }
+
+    public static int GetClearReward(int customer)
+    {
+        return customer * 10 + 100;
+    }
 }
