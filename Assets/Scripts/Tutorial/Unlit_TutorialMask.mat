@@ -42,6 +42,6 @@ Material:
     - _UseUIAlphaClip: 0
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _PointsBottom: {r: 0.2988797, g: 0.11120722, b: 0.8785093, a: 0.11120722}
-    - _PointsTop: {r: 0.2988797, g: 0.16526127, b: 0.8785093, a: 0.16526127}
+    - _PointsBottom: {r: 0.32202414, g: 0.03539346, b: 0.87163687, a: 0.03539346}
+    - _PointsTop: {r: 0.32202414, g: 0.09789346, b: 0.87163687, a: 0.09789346}
   m_BuildTextureStacks: []
