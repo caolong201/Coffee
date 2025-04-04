@@ -49,8 +49,8 @@ public class UIInGame : UIElement
     [SerializeField] Slider progressSlider;
     [SerializeField] Button cheatBtn;
     [SerializeField] RectTransform bottomRT;
-    
 
+    UILose lose;
     public override void Show()
     {
         base.Show();
@@ -352,6 +352,8 @@ public class UIInGame : UIElement
     public void UpdateCoinLb()
     {
         progressText.text = UserData.TotalMoneyInGame.ToString();
+        
+
         //progressText.text = GameManager.Instance.UserData.coin.ToString();
     }
 
@@ -379,7 +381,7 @@ public class UIInGame : UIElement
             if (scaleElapsed < scaleDuration)
             {
                 scaleElapsed += Time.deltaTime;
-                progressPanel.transform.localScale = Vector3.Lerp(startScale, targetScale, scaleElapsed / scaleDuration);
+                //progressPanel.transform.localScale = Vector3.Lerp(startScale, targetScale, scaleElapsed / scaleDuration);
             }
 
             yield return null; 

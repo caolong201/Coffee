@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class UILose : UIElement
@@ -17,8 +18,10 @@ public class UILose : UIElement
     [SerializeField] GameObject failedText;
     [SerializeField] Text dayTxt;
     [SerializeField] Text costTxt;
+    int Coin = 100;
 
     private int replayCost = 100;
+    UILose uilose;
 
     private void Start()
     {
@@ -28,12 +31,16 @@ public class UILose : UIElement
         homeButton.onClick.AddListener(HomeButton);
     }
 
-    private void RetryCoin()
+    public void RetryCoin()
     {
         GameManager.Instance.ChangeState(GameStates.Resume);
         GameManager.Instance.AddCoin(-replayCost);
         Hide();
         GameUI.Instance.Get<UIInGame>().UpdateCoinLb();
+
+        UserData.TotalMoneyInGame -= Coin;
+        GameUI.Instance.Get<UIInGame>().UpdateCoinLb();
+
     }
 
     private void RetryAds()
@@ -47,22 +54,28 @@ public class UILose : UIElement
         // });
     }
 
+
+    //public void RetryButton ()
+    //{
+    //    UserData.TotalMoneyInGame -= 200;
+    //}    
     public void HomeButton()
     {
-        if (DayManager.Instance.HasShop())
-        {
-            DayManager.Instance.CleanPassengers();
-            DayManager.Instance.Clear(true);
-            DayManager.Instance.ReduceDay();
-            GameManager.Instance.ChangeState(GameStates.Home);
-            DayManager.Instance.RemoveLast();
+        //if (DayManager.Instance.HasShop())
+        //{
+        //    DayManager.Instance.CleanPassengers();
+        //    DayManager.Instance.Clear(true);
+        //    DayManager.Instance.ReduceDay();
+        //    GameManager.Instance.ChangeState(GameStates.Home);
+        //    DayManager.Instance.RemoveLast();
 
-        }
-        else
-        {
-            GameManager.Instance.ChangeState(GameStates.Retry);
-        }
-        Hide();
+        //}
+        //else
+        //{
+        //    GameManager.Instance.ChangeState(GameStates.Retry);
+        //}
+        //Hide();
+        SceneManager.LoadScene("Game");
     }
 
     public override void Show()
