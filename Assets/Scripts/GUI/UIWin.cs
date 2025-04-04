@@ -3,6 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
+using UnityEngine.SceneManagement;
 
 public class UIWin : UIElement
 {
@@ -12,11 +13,10 @@ public class UIWin : UIElement
 
     public override bool UseBehindPanel => true;
 
-    //[SerializeField] Text coinText;
+    [SerializeField] Text coinText;
     [SerializeField] TextMeshProUGUI dayText;
     [SerializeField] TextMeshProUGUI visitorText;
     [SerializeField] Text curCoinText;
-
     [SerializeField] Button nextLevelButton;
     //[SerializeField] Button homeButon;
     [SerializeField] Button adsButon;
@@ -35,6 +35,7 @@ public class UIWin : UIElement
     private float spinDir = 1;
     private bool isSpinning = true;
     private int curSpinIdx;
+    private int winMinigame = 500;
 
 
     private void Start()
@@ -164,23 +165,27 @@ public class UIWin : UIElement
         //adsButon.interactable = AdUtil.IsAdsReady();
     }
 
-    private void UpdateUserCoin()
+
+    public void UpdateUserCoin()
     {
         curCoinText.text = GameManager.Instance.UserData.coin.ToString();
     }
 
     public void NextLevelButton()
     {
-        var dat = GameManager.Instance.UserData;
-        if (!dat.hasUnlockLicense && dat.day == DayManager.Instance.dayConfig.licenceDay)
-        {
-            HomeButton();
-        }
-        else
-        {
-            Hide();
-            GameManager.Instance.ChangeState(GameStates.NextLevel);
-        }
+        //var dat = GameManager.Instance.UserData;
+        //if (!dat.hasUnlockLicense && dat.day == DayManager.Instance.dayConfig.licenceDay)
+        //{
+        //    HomeButton();
+        //}
+        //else
+        //{
+        //    Hide();
+        //    GameManager.Instance.ChangeState(GameStates.NextLevel);
+        //}
+        UserData.TotalMoneyInGame += winMinigame;
+        SceneManager.LoadScene("Game");
+
     }
 
     public void HomeButton()
@@ -188,12 +193,12 @@ public class UIWin : UIElement
         Hide();
         GameManager.Instance.ChangeState(GameStates.Home);
     }
-
-    private void SetCoinText(float coin)
+    public void SetCoinText(float coin)
     {
         //coinText.text = coin.ToString();
     }
 
+    //h
     private void SetDayText(float day)
     {
         dayText.text = "Day " + day.ToString();

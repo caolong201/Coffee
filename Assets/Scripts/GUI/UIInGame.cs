@@ -49,6 +49,7 @@ public class UIInGame : UIElement
     [SerializeField] Slider progressSlider;
     [SerializeField] Button cheatBtn;
     [SerializeField] RectTransform bottomRT;
+    
 
     public override void Show()
     {
@@ -350,7 +351,8 @@ public class UIInGame : UIElement
 
     public void UpdateCoinLb()
     {
-        progressText.text = GameManager.Instance.UserData.coin.ToString();
+        progressText.text = UserData.TotalMoneyInGame.ToString();
+        //progressText.text = GameManager.Instance.UserData.coin.ToString();
     }
 
     private IEnumerator AnimateFillAmount(float targetFillAmount)
