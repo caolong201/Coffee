@@ -208,7 +208,11 @@ public class DayManager : Singleton<DayManager>, IOnStart
             }
             else
             {
-                VFXAnimationManager.Instance.PlayAngryEmoji();
+                //VFXAnimationManager.Instance.PlayAngryEmoji();
+                EffectManager.Instance.PlayEffect<ParticleSystem>(EEffectType.Failed,
+                    new Vector3(0, 2.2f, -4),
+                    Quaternion.Euler(new Vector3(0, 180, 0)));
+                
                 StartCoroutine(EndGameResult(false));
                 return;
             } 

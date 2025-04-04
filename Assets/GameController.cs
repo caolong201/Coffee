@@ -137,7 +137,7 @@ public class GameController : SingletonMonoBehaviour<GameController>
             if (count % 5 == 0)
             {
                 x = 0;
-                y -= 1.5f;
+                y -= 1.3f;
             }
 
             if (count % 35 == 0)

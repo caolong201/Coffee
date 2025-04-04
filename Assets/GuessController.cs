@@ -115,7 +115,7 @@ public class GuessController : MonoBehaviour
         {
             _timer = 0;
 
-            if (GameUI.Instance.ActiveCount > 1 || (_isMainGame && GameController.Instance.GameEnd))
+            if (GameUI.Instance.ActiveCount > 1 || (_isMainGame && GameController.Instance.GameEnd) || (_isMainGame && UserData.LevelIndex == 0))
             {
                 return;
             }
@@ -137,7 +137,7 @@ public class GuessController : MonoBehaviour
             }
             else
             {
-                _particleEmotion = EffectManager.Instance.PlayEffect<ParticleSystem>(effType, new Vector3(0, 2.5f, -5),
+                _particleEmotion = EffectManager.Instance.PlayEffect<ParticleSystem>(effType, new Vector3(-1f, 1.8f, -5),
                     Quaternion.Euler(new Vector3(-90, 0, 0)));
 
                 _particleEmotion.gameObject.layer = LayerMask.NameToLayer("Default");

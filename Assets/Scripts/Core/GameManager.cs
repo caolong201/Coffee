@@ -105,7 +105,7 @@ public class GameManager : Singleton<GameManager>
                 GameUI.Instance.Get<UIWin>().Show();
                 break;
             case GameStates.Lose:
-                GameUI.Instance.Get<UIInGame>().Hide();
+                //GameUI.Instance.Get<UIInGame>().Hide();
                 GameUI.Instance.Get<UILose>().Show();
                 break;
             case GameStates.NextLevel:
